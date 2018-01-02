@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="yes"?>
+
+<glsl_hacker>
+	
+  <window name="win3d01" title="PyOpenGL" 
+          width="800" height="400" 
+          layer="1" 
+          gl_version_major="2" gl_version_minor="1"  />
+          
+
+          
+      
+  
+  
+  
+  
+	<script name="init_scene" run_mode="INIT" language="PYTHON" >
+		<raw_data><![CDATA[	
+    
+import gh_node
+import gh_object
+import gh_camera
+import gh_mesh
+import gh_gpu_program
+import gh_texture
+import gh_utils
+import gh_renderer
+import gh_window
+import sys
+import platform
+
+    
+
+gh_renderer.set_scissor_state(1)
+gh_renderer.set_vsync(0)
+
+winW, winH = gh_window.getsize(0)
+
+font_a = gh_utils.font_create("Tahoma", 14)
+gh_utils.font_set_viewport_info(font_a, 0, 0, winW, winH)
+
+
+
+
+
+#=== PyOpenGL start ============================================
+
+import OpenGL 
+from OpenGL.GL import *
+from OpenGL.GLU import *
+
+
+vertex_shader_txt = '''
+#version 120
+void main() 
+{ 
+  gl_FrontColor = gl_Color;
+  gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+}'''
+
+fragment_shader_txt = '''
+#version 120
+void main() 
+{ 
+  gl_FragColor = gl_Color;
+}'''
+
+
+
+vertex_shader = glCreateShader(GL_VERTEX_SHADER)
+glShaderSource(vertex_shader, vertex_shader_txt)
+glCompileShader(vertex_shader)
+if not bool(glGetShaderiv(vertex_shader, GL_COMPILE_STATUS)) == True:
+  gh_utils.trace("Vertex shader info log:" + glGetShaderInfoLog(vertex_shader))
+
+
+fragment_shader = glCreateShader(GL_FRAGMENT_SHADER)
+glShaderSource(fragment_shader, fragment_shader_txt)
+glCompileShader(fragment_shader)
+if not bool(glGetShaderiv(fragment_shader, GL_COMPILE_STATUS)) == True:
+  gh_utils.trace("Fragment shader info log:" + glGetShaderInfoLog(fragment_shader))
+
+
+gpu_program = glCreateProgram()
+glAttachShader(gpu_program, vertex_shader)
+glAttachShader(gpu_program, fragment_shader)
+glLinkProgram(gpu_program)
+if not bool(glGetProgramiv(gpu_program, GL_LINK_STATUS)) == True:
+  gh_utils.trace("GPU program info log:" + GetProgramInfoLog(gpu_program))
+  
+
+
+
+#=== PyOpenGL end ============================================
+  
+
+		]]></raw_data>
+	</script> 
+  
+  
+  
+  
+	<script name="kill_scene" run_mode="TERMINATE" language="PYTHON" >
+		<raw_data><![CDATA[	
+
+#=== PyOpenGL start ============================================
+
+glDetachShader(gpu_program, vertex_shader)
+glDetachShader(gpu_program, fragment_shader)
+glDeleteShader(vertex_shader)
+glDeleteShader(fragment_shader)
+glDeleteProgram(gpu_program)
+
+#=== PyOpenGL end ============================================
+
+		]]></raw_data>
+	</script> 
+  
+  
+  
+  
+
+  
+	<script name="update_scene" run_mode="FRAME" language="PYTHON" >
+		<raw_data><![CDATA[	
+
+
+elapsed_time = gh_utils.get_elapsed_time()
+
+
+#=== PyOpenGL start ============================================
+
+glMatrixMode (GL_PROJECTION)
+glLoadIdentity()
+gluPerspective(40.0, winW/winH, 1.0, 100.0)
+glMatrixMode(GL_MODELVIEW)
+glLoadIdentity()
+gluLookAt(
+    0,0,6, # eyepoint
+    0,0,0, # center-of-view
+    0,1,0, # up-vector
+)
+
+glClearColor(0.1, 0.2, 0.25, 1.0)
+glClear( GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT )
+
+
+glEnable(GL_DEPTH_TEST) 
+
+#glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+
+glDisable(GL_CULL_FACE)
+
+glUseProgram(gpu_program)
+
+
+glBegin( GL_TRIANGLES )
+
+glColor(1, 0, 0)
+glVertex(-2, -2, 0)
+
+glColor(0, 1, 0)
+glVertex(0, 2, 0)
+
+glColor(0, 0, 1)
+glVertex(2, -2, 0)
+
+
+glEnd()      			
+
+#=== PyOpenGL end ============================================
+
+
+
+
+
+
+
+gh_utils.font_render(font_a, 10, 20, 1.0, 1.0, 0.0, 1.0, "GeeXLab - PyOpenGL demo")
+
+		]]></raw_data>
+	</script> 
+  
+
+ 
+	<script name="resize_scene" run_mode="SIZE" language="PYTHON" >
+		<raw_data><![CDATA[	
+
+winW, winH = gh_window.getsize(0)
+
+gh_utils.font_set_viewport_info(font_a, 0, 0, winW, winH)
+
+		]]></raw_data>
+	</script> 
+  
+  
+  
+</glsl_hacker>
